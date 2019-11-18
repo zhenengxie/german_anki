@@ -3,7 +3,7 @@
 from anki.hooks import addHook
 import hashlib
 from google.cloud import texttospeech
-from german_anki.conjugator import declenations_noun, declenations_adj
+from german_anki.conjugator import conjugate_verb, declenations_noun, declenations_adj
 
 CLIENT = texttospeech.TextToSpeechClient()
 VOICE = texttospeech.types.VoiceSelectionParams(
@@ -52,8 +52,8 @@ def onFocusLost(flag, note, fidx):
     
     if note.model()['name'] == 'AUTO German Nouns':
         field_indices = {card: i for i, card in enumerate(mw.col.models.fieldNames(note.model()))}
-        if field_indices['Stem'] == fidx:
-            nouns = [noun.strip() for noun in note['Stem'].strip().split(',')]
+        if field_indices['Auto'] == fidx and not note['Manual Override']:
+            nouns = [noun.strip() for noun in note['Auto'].strip().split(',')]
             decls = [declenations_noun(noun) for noun in nouns]
             decls = [decl for decl in decls if decl]
 
@@ -101,7 +101,7 @@ def onFocusLost(flag, note, fidx):
 
     if note.model()['name'] == 'AUTO German Adjectives':
         field_indices = {card: i for i, card in enumerate(mw.col.models.fieldNames(note.model()))}
-        if field_indices['Auto'] == fidx:
+        if field_indices['Auto'] == fidx and not note['Manual Override']:
             adjs = [adj.strip() for adj in note['Auto'].split(',')]
             decls = [declenations_adj(adj) for adj in adjs]
             decls = [decl for decl in decls if decl]
@@ -127,6 +127,44 @@ def onFocusLost(flag, note, fidx):
                     note[field] = values
                     if field != 'Stem':
                         note[field + ' Sound'] = tts(values)
+            return True
+
+    if note.model()['name'] == 'AUTO German Verbs':
+        field_indices = {card: i for i, card in enumerate(mw.col.models.fieldNames(note.model()))}
+        if field_indices['Auto'] == fidx and not note['Manual Override']:
+            inf = note['Auto'].strip()
+
+            conj = conjugate_verb(inf)
+
+            if conj:
+                for field in [
+                        'Present 1', 'Present 2 Sing', 'Present 3', 'Present 1 3 Plural 2 Formal',
+                        'Present 2 Plural', 'Imperfect 1', 'Conjunctive II 1', 'Infinitive']:
+                    note[field] = conj[field]
+
+                if conj['aux'] == 'h':
+                    note['Aux Past Participle'] = "haben {0}".format(conj['Past Participle'])
+                if conj['aux'] == 's':
+                    note['Aux Past Participle'] = "sein {0}".format(conj['Past Participle'])
+                if conj['aux'] == 'hs':
+                    note['Aux Past Participle'] = "habe {0}, sein {0}".format(conj['Past Participle'])
+
+                note['Imperative Singular'] = ', '.join(conj['Imperative Singular'])
+
+                for prefix, field in [
+                        ('', 'Infinitive'),
+                        ('ich ', 'Present 1'),
+                        ('du ', 'Present 2 Sing'),
+                        ('es ', 'Present 3'),
+                        ('wir ', 'Present 1 3 Plural 2 Formal'),
+                        ('ihr ', 'Present 2 Plural'),
+                        ('', 'Aux Past Participle'),
+                        ('', 'Imperative Singular'),
+                        ('ich ', 'Conjunctive II 1'),
+                        ('ich ', 'Imperfect 1')
+                        ]:
+                    note[field + ' Sound'] = tts(prefix + note[field])
+
             return True
 
     return False

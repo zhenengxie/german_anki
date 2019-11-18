@@ -8,40 +8,64 @@ VERBS = DB.get_table('verb')
 NOUNS = DB.get_table('noun')
 ADJVS = DB.get_table('adjective')
 
-def conjugate_verb(inf):
-    """ verb conjugater """
-    data = VERBS.find_one(word=inf)
+def conjugate_verb(verb):
+    data = VERBS.find_one(word=verb)
 
-    if not data:
-        print("oh no, not found")
+    if data is None:
         return {}
 
-    conjugations = {'infinitive': inf}
+    conj = {
+        'Infinitive': data['word'],
+        'aux': data['auxillary_verb'],
+        'prefix': data['seperable_prefix'],
+        'Conjunctive II 1': data['conjunctive_ii_stem'] + 'e'
+        }
 
-    voices = [
-        'first person singular',
-        'second person singular informal',
-        'third person singular',
-        'second person plural',
-        'first person plural',
-        'second person singular formal'
-        ]
-    if data['seperable_prefix'] == '':
-        seperable_end = ''
-    else:
-        seperable_end = ' ' + data['seperable_prefix']
+    conj['Past Participle'] = conj['prefix'] + data['past_participle']
 
-    conjugations['present first person singular'] = data['present_stem'] + 'e' + seperable_end
+    conj['Present 1'] = data['present_stem'] + 'e'
+
+    conj['Present 2 Sing'] = data['present_second_third_stem']
+    conj['Present 2 Plural'] = data['present_stem']
+    conj['Present 3'] = data['present_second_third_stem']
     if data['e_on_present_second_third']:
-        e_maybe = 'e'
+        conj['Present 2 Sing'] += 'e'
+        conj['Present 2 Plural'] += 'e'
+        conj['Present 3'] += 'e'
+    if data['present_second_ends_t'] or data['esset_stem_ending']:
+        conj['Present 2 Sing'] += 't'
     else:
-        e_maybe = ''
-    conjugations['present second person informal'] = data['present_second_third_stem'] + e_maybe + 'st' + seperable_end
-    conjugations['present third person'] = data['present_second_third_stem'] + e_maybe + 't' + seperable_end
-    conjugations['present second person'] = data['present_stem'] + e_maybe + 'st' + seperable_end
-    conjugations['past participle'] = data['past_participle']
+        conj['Present 2 Sing'] += 'st'
+    conj['Present 2 Plural'] += 't'
+    conj['Present 3'] += 't'
+    conj['Present 1 3 Plural 2 Formal'] = conj['Infinitive']
 
-    return conjugations
+    conj['Imperfect 1'] = data['past_stem']
+    if not data['no_te_past_stem']:
+        conj['Imperfect 1'] += 'te'
+
+    if data['imperative_uses_infinite_vowel']:
+        imp_stem = data['present_stem']
+    else:
+        imp_stem = data['present_second_third_stem']
+
+    if data['no_e_imperative']:
+        conj['Imperative Singular'] = [imp_stem]
+    elif data['e_on_present_second_third'] or imp_stem[-2:] == 'ig':
+        conj['Imperative Singular'] = [imp_stem + 'e']
+    else:
+        conj['Imperative Singular'] = [imp_stem, imp_stem + 'e']
+    
+    if conj['prefix']:
+        for field in [
+                'Present 1', 'Present 2 Sing', 'Present 2 Plural', 'Present 1 3 Plural 2 Formal',
+                'Imperfect 1', 'Conjunctive II 1'
+                ]:
+                conj[field] += ' ' + conj['prefix']
+
+        conj['Imperative Singular'] = [form + ' ' + conj['prefix'] for form in conj['Imperative Singular']]
+
+    return conj
 
 def declenations_noun(noun):
     data = NOUNS.find_one(word=noun)
@@ -111,3 +135,4 @@ def declenations_adj(adj):
         decl['superlative'] = data['superlative']
 
     return decl
+
