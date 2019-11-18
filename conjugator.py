@@ -3,7 +3,7 @@ and adjectives """
 
 import dataset
 
-DB = dataset.connect('sqlite:///.german.db')
+DB = dataset.connect('sqlite:///.local/share/Anki2/addons21/german_anki/german.db')
 VERBS = DB.get_table('verb')
 NOUNS = DB.get_table('noun')
 ADJVS = DB.get_table('adjective')
@@ -38,7 +38,7 @@ def conjugate_verb(verb):
         conj['Present 2 Sing'] += 'st'
     conj['Present 2 Plural'] += 't'
     conj['Present 3'] += 't'
-    conj['Present 1 3 Plural 2 Formal'] = conj['Infinitive']
+    conj['Present 1 3 Plural 2 Formal'] = data['present_stem'] + 'en'
 
     conj['Imperfect 1'] = data['past_stem']
     if not data['no_te_past_stem']:
