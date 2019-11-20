@@ -5,6 +5,9 @@ import hashlib
 from google.cloud import texttospeech
 from german_anki.conjugator import conjugate_verb, declenations_noun, declenations_adj
 from bs4 import BeautifulSoup
+from aqt import mw
+from aqt.editor import Editor
+
 
 CLIENT = texttospeech.TextToSpeechClient()
 VOICE = texttospeech.types.VoiceSelectionParams(
@@ -83,8 +86,6 @@ GERMAN_VERB_NAME = "German Verbs"
 GERMAN_GENR_NAME = "German General"
 
 def onFocusLost(flag, note, fidx):
-    from aqt import mw
-
     note_type = note.model()['name']
     field_indices = {card: i for i, card in enumerate(mw.col.models.fieldNames(note.model()))}
     
@@ -182,3 +183,15 @@ def onFocusLost(flag, note, fidx):
     return False
 
 addHook("editFocusLost", onFocusLost)
+
+def clearFields(self):
+    for field in mw.col.models.fieldNames(self.note.model()):
+        self.note[field] = ''
+    self.note.flush()
+    mw.reset()
+
+def onSetupShortcuts(cuts, self):
+    cuts += [("Ctrl+Y", self.clearFields)]
+
+Editor.clearFields = clearFields
+addHook("setupEditorShortcuts", onSetupShortcuts)
