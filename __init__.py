@@ -176,7 +176,7 @@ def onFocusLost(flag, note, fidx):
                 add_sound(note, 'verb')
             if note_type == GERMAN_ADJV_NAME:
                 add_sound(note, 'adj')
-            if note_type == GERMAN_GENR_NAME:
+            if note_type == GERMAN_GENR_NAME or note_type == 'German Phrases':
                 add_sound(note, 'general')
             return True
 
