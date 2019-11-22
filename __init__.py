@@ -180,7 +180,7 @@ def onFocusLost(flag, note, fidx):
                 add_sound(note, 'general')
             return True
 
-    return False
+    return flag
 
 addHook("editFocusLost", onFocusLost)
 
