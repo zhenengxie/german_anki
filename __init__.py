@@ -120,6 +120,35 @@ def onFocusLost(flag, note, fidx):
             else:
                 note['Genitive Singular'] = ""
 
+        if field_indices['Manual Override'] == fidx and note['Manual Override'] == 'i':
+            if note['Nominative Singular']:
+                words_nom_sing = note['Nominative Singular'].split(', ')
+                words_nom_sing_formatted = []
+                for word in words_nom_sing:
+                    word = word.strip()
+                    gender = word.split(' ')[0]
+                    word = word[len(gender) + 1:]
+                    words_nom_sing_formatted.append(format_noun(gender, word, 'nom'))
+                note['Nominative Singular'] = ", ".join(words_nom_sing_formatted)
+
+            if note['Genitive Singular']:
+                words_nom_sing = note['Genitive Singular'].split(', ')
+                words_nom_sing_formatted = []
+                for word in words_nom_sing:
+                    word = word.strip()
+                    gender = word.split(' ')[0]
+                    word = word[len(gender) + 1:]
+                    words_nom_sing_formatted.append(format_noun(gender, word, 'gen'))
+                note['Genitive Singular'] = ", ".join(words_nom_sing_formatted)
+
+            if note['Nominative Plural']:
+                words_pl = note['Nominative Plura'].split(', ')
+                words_pl_formatted = []
+                for word in words_pl:
+                    words_pl_formatted.append(format_noun('pl', word, 'nom'))
+                note['Nominative Plural'] = ", ".join(words_pl_formatted)
+
+            note['Manual Override'] = 'a'
 
     if note_type == GERMAN_ADJV_NAME:
         if field_indices['Auto'] == fidx and not note['Manual Override']:
@@ -146,6 +175,7 @@ def onFocusLost(flag, note, fidx):
                 if values:
                     values = comma_join(values)
                     note[field] = values
+
 
     if note_type == GERMAN_VERB_NAME:
         if field_indices['Auto'] == fidx and not note['Manual Override']:
