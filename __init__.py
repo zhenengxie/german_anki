@@ -194,7 +194,7 @@ def onFocusLost(flag, note, fidx):
                 if conj['aux'] == 's':
                     note['Aux Past Participle'] = "sein {0}".format(conj['Past Participle'])
                 if conj['aux'] == 'hs':
-                    note['Aux Past Participle'] = "habe {0}, sein {0}".format(conj['Past Participle'])
+                    note['Aux Past Participle'] = "haben {0}, sein {0}".format(conj['Past Participle'])
 
                 note['Imperative Singular'] = ', '.join(conj['Imperative Singular'])
 

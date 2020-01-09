@@ -18,48 +18,71 @@ def conjugate_verb(verb):
         'Infinitive': data['word'],
         'aux': data['auxillary_verb'],
         'prefix': data['seperable_prefix'],
-        'Conjunctive II 1': data['conjunctive_ii_stem'] + 'e'
         }
 
     conj['Past Participle'] = conj['prefix'] + data['past_participle']
 
-    conj['Present 1'] = data['present_stem'] + 'e'
+    if data['type'] == 'de-conj-weak-eln':
+        conj['Present 1'] = data['present_stem'] + 'le'
+        conj['Present 2 Sing'] = data['present_second_third_stem'] + 'elst'
+        conj['Present 2 Plural'] = data['present_stem'] + 'elt'
+        conj['Present 3'] = data['present_second_third_stem'] + 'elt'
+        conj['Present 1 3 Plural 2 Formal'] = data['present_stem'] + 'eln'
+        conj['Conjunctive II 1'] = data['conjunctive_ii_stem'] + 'le'
+        conj['Imperfect 1'] = data['past_stem'] + 'elte'
+        conj['Imperative Singular'] = [data['present_stem'] + 'le']
 
-    conj['Present 2 Sing'] = data['present_second_third_stem']
-    conj['Present 2 Plural'] = data['present_stem']
-    conj['Present 3'] = data['present_second_third_stem']
-    if data['e_on_present_second_third']:
-        conj['Present 2 Sing'] += 'e'
-        conj['Present 2 Plural'] += 'e'
-        conj['Present 3'] += 'e'
-    if data['present_second_ends_t'] or data['esset_stem_ending']:
-        conj['Present 2 Sing'] += 't'
+    elif data['type'] == 'de-conj-weak-ern':
+        conj['Present 1'] = data['present_stem'] + 'ere'
+        conj['Present 2 Sing'] = data['present_second_third_stem'] + 'erst'
+        conj['Present 2 Plural'] = data['present_stem'] + 'ert'
+        conj['Present 3'] = data['present_second_third_stem'] + 'ert'
+        conj['Present 1 3 Plural 2 Formal'] = data['present_stem'] + 'ern'
+        conj['Conjunctive II 1'] = data['conjunctive_ii_stem'] + 'ere'
+        conj['Imperfect 1'] = data['past_stem'] + 'erte'
+        conj['Imperative Singular'] = [data['present_stem'] + 're']
     else:
-        conj['Present 2 Sing'] += 'st'
-    conj['Present 2 Plural'] += 't'
-    conj['Present 3'] += 't'
-    conj['Present 1 3 Plural 2 Formal'] = data['present_stem'] + 'en'
+        conj['Present 1'] = data['present_stem'] + 'e'
 
-    conj['Imperfect 1'] = data['past_stem']
-    if not data['no_te_past_stem']:
-        conj['Imperfect 1'] += 'te'
+        conj['Present 2 Sing'] = data['present_second_third_stem']
+        conj['Present 2 Plural'] = data['present_stem']
+        conj['Present 3'] = data['present_second_third_stem']
+        if data['e_on_present_second_third']:
+            conj['Present 2 Sing'] += 'e'
+            conj['Present 2 Plural'] += 'e'
+            conj['Present 3'] += 'e'
+        if data['present_second_ends_t'] or data['esset_stem_ending']:
+            conj['Present 2 Sing'] += 't'
+        else:
+            conj['Present 2 Sing'] += 'st'
+        conj['Present 2 Plural'] += 't'
+        conj['Present 3'] += 't'
+        conj['Present 1 3 Plural 2 Formal'] = data['present_stem'] + 'en'
 
-    if data['imperative_uses_infinite_vowel']:
-        imp_stem = data['present_stem']
-    else:
-        imp_stem = data['present_second_third_stem']
+        conj['Conjunctive II 1'] = data['conjunctive_ii_stem'] + 'e'
 
-    if data['no_e_imperative']:
-        conj['Imperative Singular'] = [imp_stem]
-    elif data['e_on_present_second_third'] or imp_stem[-2:] == 'ig':
-        conj['Imperative Singular'] = [imp_stem + 'e']
-    else:
-        conj['Imperative Singular'] = [imp_stem, imp_stem + 'e']
+        conj['Imperfect 1'] = data['past_stem']
+        if data['e_on_present_second_third']:
+            conj['Imperfect 1'] += 'e'
+        if not data['no_te_past_stem']:
+            conj['Imperfect 1'] += 'te'
+
+        if data['imperative_uses_infinite_vowel']:
+            imp_stem = data['present_stem']
+        else:
+            imp_stem = data['present_second_third_stem']
+
+        if data['no_e_imperative']:
+            conj['Imperative Singular'] = [imp_stem]
+        elif data['e_on_present_second_third'] or imp_stem[-2:] == 'ig':
+            conj['Imperative Singular'] = [imp_stem + 'e']
+        else:
+            conj['Imperative Singular'] = [imp_stem, imp_stem + 'e']
     
     if conj['prefix']:
         for field in [
                 'Present 1', 'Present 2 Sing', 'Present 2 Plural', 'Present 1 3 Plural 2 Formal',
-                'Imperfect 1', 'Conjunctive II 1'
+                'Present 3', 'Imperfect 1', 'Conjunctive II 1'
                 ]:
                 conj[field] += ' ' + conj['prefix']
 
