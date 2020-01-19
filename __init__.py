@@ -220,8 +220,14 @@ def clearFields(self):
     self.note.flush()
     mw.reset()
 
-def onSetupShortcuts(cuts, self):
-    cuts += [("Ctrl+Y", self.clearFields)]
+def noteStyle(self):
+    self.web.eval("""wrap('<span class="inlinenote">', '</span>');""")
 
+
+def onSetupShortcuts(cuts, self):
+    cuts += [("Ctrl+Y", self.clearFields),
+             ("Ctrl+Shift+W", self.noteStyle)]
+    
+Editor.noteStyle = noteStyle
 Editor.clearFields = clearFields
 addHook("setupEditorShortcuts", onSetupShortcuts)
