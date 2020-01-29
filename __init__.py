@@ -73,7 +73,11 @@ def format_noun(gender, word, case):
             ('pl', 'gen'): 'der'
             }
 
-    rawtext = articles[(gender, case)] + ' ' + word
+    if gender == 'pl':
+        rawtext = word
+    else:
+        rawtext = articles[(gender, case)] + ' ' + word
+
     return """<span class="{0}">{1}</span>""".format(gender, rawtext)
 
 def comma_join(lst):
@@ -160,7 +164,7 @@ def onFocusLost(flag, note, fidx):
             stems = [decl['stem'] for decl in decls if 'stem' in decl]
             preds = [decl['pred'] for decl in decls if 'pred' in decl]
             comps = [decl['comparative'] for decl in decls if 'comparative' in decl]
-            sups = [decl['superlative'] for decl in decls if 'superlative' in decl]
+            sups = ['am ' + decl['superlative'] + 'en' for decl in decls if 'superlative' in decl]
 
             lemmas = comma_join(lemmas)
             note['Lemma'] = lemmas
