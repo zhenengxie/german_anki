@@ -8,7 +8,7 @@ VERBS = DB.get_table('verb')
 NOUNS = DB.get_table('noun')
 ADJVS = DB.get_table('adjective')
 
-def conjugate_verb(verb):
+def conjugate_verb(verb, reflexive):
     data = VERBS.find_one(word=verb)
 
     if data is None:
@@ -78,6 +78,20 @@ def conjugate_verb(verb):
             conj['Imperative Singular'] = [imp_stem + 'e']
         else:
             conj['Imperative Singular'] = [imp_stem, imp_stem + 'e']
+
+    if reflexive:
+        conj['Infinitive'] = 'sich ' + conj['Infinitive']
+        conj['Present 1'] += ' mich'
+        conj['Present 2 Sing'] += ' dich'
+        conj['Present 3'] += ' sich'
+        conj['Present 2 Plural'] += ' euch'
+        conj['Present 1 3 Plural 2 Formal'] += ' uns'
+        conj['Imperfect 1'] += ' mich'
+        conj['Conjunctive II 1'] += ' mich'
+
+        conj['Past Participle'] = 'sich ' + conj['Past Participle']
+
+        conj['Imperative Singular'] = [form + ' dich' for form in conj['Imperative Singular']]
     
     if conj['prefix']:
         for field in [

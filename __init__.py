@@ -183,9 +183,14 @@ def onFocusLost(flag, note, fidx):
 
     if note_type == GERMAN_VERB_NAME:
         if field_indices['Auto'] == fidx and not note['Manual Override']:
-            inf = note['Auto'].strip()
+            words = note['Auto'].strip().split(' ')
+            reflexive = words[0] == 'sich'
+            if reflexive:
+                inf = words[1]
+            else:
+                inf = words[0]
 
-            conj = conjugate_verb(inf)
+            conj = conjugate_verb(inf, reflexive)
 
             if conj:
                 for field in [
