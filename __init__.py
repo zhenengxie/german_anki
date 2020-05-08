@@ -164,9 +164,24 @@ def onFocusLost(flag, note, fidx):
 
                     verb_conj_list.append(verb_conj)
 
+            print(verb_conj_list)
+
             """ Processing infinitives """
             
-            note['Infinitive'] = note['Auto']
+            entries = []
+            for verb_conj in verb_conj_list:
+                entry = ""
+                if verb_conj['reflexive']:
+                    entry += "sich "
+
+                if 'prefix' in verb_conj:
+                    entry += verb_conj['prefix'] + '|'
+
+                entry += verb_conj['infinitive_no_prefix']
+
+                entries.append(entry)
+
+            note['Infinitive'] = comma_join(entries)
 
             """ Processing present tense """
 
@@ -288,7 +303,6 @@ def add_sound(note):
 
     if note_type == GERMAN_VERB_NAME:
         field_and_prefixes = [
-                ("Infinitive", None), 
                 ("ich", "ich"),
                 ("du", "du"),
                 ("er;sie;es", "es"),
@@ -309,6 +323,9 @@ def add_sound(note):
                 note[field + " Sound"] = tts(comma_join(entries))
             else:
                 add_sound_to_field(note, field)
+
+        """ Replacing | for generating the infinitive """
+        note['Infinitive Sound'] = tts(note['Infinitive'].replace("|", ""))
 
 addHook("editFocusLost", onFocusLost)
 

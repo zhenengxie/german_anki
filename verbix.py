@@ -23,9 +23,13 @@ def scrape_verbix(verb):
 
     present_table = get_conjugation_table(soup, "Indicative", "Present")
 
-    """ Checking for seperable prefix """
+    """ Checking for seperable prefix and seperating stem """
     if len(present_table["ich"].split(";")[0].split(" ")) > 1:
         verb_conj['prefix'] = present_table["ich"].split(";")[0].split(" ")[1]
+        verb_conj['infinitive_no_prefix'] = verb[len(verb_conj['prefix']):]
+    else:
+        verb_conj['infinitive_no_prefix'] = verb
+
 
     """ Parsing present tense """
     for pronoun in present_table:
