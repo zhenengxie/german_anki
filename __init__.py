@@ -7,6 +7,7 @@ from german_anki.conjugator import conjugate_verb, declenations_adj, declenation
 from bs4 import BeautifulSoup
 from aqt import mw
 from aqt.editor import Editor
+from aqt.utils import showInfo
 
 CLIENT = texttospeech.TextToSpeechClient()
 VOICE = texttospeech.types.VoiceSelectionParams(
@@ -42,7 +43,7 @@ def comma_join(lst):
 GERMAN_NOUN_NAME = "German Nouns"
 GERMAN_ADJV_NAME = "German Adjectives"
 GERMAN_VERB_NAME = "German Verbs"
-GERMAN_GENR_NAME = "German General"
+OTHER_GERMAN_NOTES = ["German General", "German Phrases"]
 
 REFLEXIVE_PRONOUN = {
         'ich': 'mich',
@@ -149,125 +150,130 @@ def onFocusLost(flag, note, fidx):
 
     if note_type == GERMAN_VERB_NAME:
         if field_indices['Auto'] == fidx and not note['Manual Override']:
+            try:
+                verb_list = note['Auto'].split(',')
+                verb_conj_list = []
+                for verb in verb_list:
+                    verb = verb.strip()
+                    parts = verb.split(' ')
+                    verb_conj = conjugate_verb(parts[-1])
+                    if verb_conj:
+                        if len(parts) > 1 and parts[0] == "sich":
+                            verb_conj['reflexive'] = True
+                        else:
+                            verb_conj['reflexive'] = False
 
-            verb_list = note['Auto'].split(',')
-            verb_conj_list = []
-            for verb in verb_list:
-                verb = verb.strip()
-                parts = verb.split(' ')
-                verb_conj = conjugate_verb(parts[-1])
-                if verb_conj:
-                    if len(parts) > 1 and parts[0] == "sich":
-                        verb_conj['reflexive'] = True
-                    else:
-                        verb_conj['reflexive'] = False
+                        verb_conj_list.append(verb_conj)
 
-                    verb_conj_list.append(verb_conj)
+                print(verb_conj_list)
 
-            print(verb_conj_list)
-
-            """ Processing infinitives """
-            
-            entries = []
-            for verb_conj in verb_conj_list:
-                entry = ""
-                if verb_conj['reflexive']:
-                    entry += "sich "
-
-                if 'prefix' in verb_conj:
-                    entry += verb_conj['prefix'] + '|'
-
-                entry += verb_conj['infinitive_no_prefix']
-
-                entries.append(entry)
-
-            note['Infinitive'] = comma_join(entries)
-
-            """ Processing present tense """
-
-            for pronoun in ['ich', 'du', 'er;sie;es', 'wir', 'ihr']:
+                """ Processing infinitives """
+                
                 entries = []
                 for verb_conj in verb_conj_list:
-                    entry = verb_conj[pronoun]
-
+                    entry = ""
                     if verb_conj['reflexive']:
-                        entry += " " + REFLEXIVE_PRONOUN[pronoun]
+                        entry += "sich "
 
                     if 'prefix' in verb_conj:
-                        entry += " " + verb_conj['prefix']
+                        entry += verb_conj['prefix'] + '|'
+
+                    entry += verb_conj['infinitive_no_prefix']
+
                     entries.append(entry)
 
-                note[pronoun] = comma_join(entries)
+                note['Infinitive'] = comma_join(entries)
 
-            """ Processing perfect tense """
+                """ Processing present tense """
 
-            entries = []
-            for verb_conj in verb_conj_list:
-                entry = verb_conj['aux_verb']
+                for pronoun in ['ich', 'du', 'er;sie;es', 'wir', 'ihr']:
+                    entries = []
+                    for verb_conj in verb_conj_list:
+                        entry = verb_conj[pronoun]
 
-                if verb_conj['reflexive']:
-                    entry += " sich"
+                        if verb_conj['reflexive']:
+                            entry += " " + REFLEXIVE_PRONOUN[pronoun]
 
-                entry += " " + verb_conj['past_participle']
+                        if 'prefix' in verb_conj:
+                            entry += " " + verb_conj['prefix']
+                        entries.append(entry)
 
-                entries.append(entry)
+                    note[pronoun] = comma_join(entries)
 
-            note['Perfect'] = comma_join(entries)
+                """ Processing perfect tense """
 
-            """ Processing imperfect tense """
+                entries = []
+                for verb_conj in verb_conj_list:
+                    entry = verb_conj['aux_verb']
 
-            entries = []
-            for verb_conj in verb_conj_list:
-                entry = verb_conj['imperfect']
-
-                if verb_conj['reflexive']:
-                    entry += " mich"
-
-                if 'prefix' in verb_conj:
-                    entry += " " + verb_conj['prefix']
-
-                entries.append(entry)
-
-            note['Imperfect'] = comma_join(entries)
-
-            """ Processing konjunctiv tense """
-
-            entries = []
-            for verb_conj in verb_conj_list:
-                entry = verb_conj['konjunctiv']
-                if verb_conj['reflexive']:
-                    entry += " mich"
-
-                if 'prefix' in verb_conj:
-                    entry += " " + verb_conj['prefix']
-
-                entries.append(entry)
-
-            note['Konjunctiv'] = comma_join(entries)
-
-            """ Processing imperative tense """
-
-            entries = []
-            for verb_conj in verb_conj_list:
-                for entry in verb_conj['imperative_forms']:
                     if verb_conj['reflexive']:
-                        entry += " dich"
+                        entry += " sich"
+
+                    entry += " " + verb_conj['past_participle']
+
+                    entries.append(entry)
+
+                note['Perfect'] = comma_join(entries)
+
+                """ Processing imperfect tense """
+
+                entries = []
+                for verb_conj in verb_conj_list:
+                    entry = verb_conj['imperfect']
+
+                    if verb_conj['reflexive']:
+                        entry += " mich"
 
                     if 'prefix' in verb_conj:
                         entry += " " + verb_conj['prefix']
 
                     entries.append(entry)
 
-            note['Imperative'] = comma_join(entries)
+                note['Imperfect'] = comma_join(entries)
+
+                """ Processing konjunctiv tense """
+
+                entries = []
+                for verb_conj in verb_conj_list:
+                    entry = verb_conj['konjunctiv']
+                    if verb_conj['reflexive']:
+                        entry += " mich"
+
+                    if 'prefix' in verb_conj:
+                        entry += " " + verb_conj['prefix']
+
+                    entries.append(entry)
+
+                note['Konjunctiv'] = comma_join(entries)
+
+                """ Processing imperative tense """
+
+                entries = []
+                for verb_conj in verb_conj_list:
+                    for entry in verb_conj['imperative_forms']:
+                        if verb_conj['reflexive']:
+                            entry += " dich"
+
+                        if 'prefix' in verb_conj:
+                            entry += " " + verb_conj['prefix']
+
+                        entries.append(entry)
+
+                note['Imperative'] = comma_join(entries)
+            except AttributeError:
+                showInfo("scraping error")
             
             add_sound(note)
 
             return True
 
-    if fidx == field_indices['Manual Override']:
-        add_sound(note)
+    if note_type in [GERMAN_VERB_NAME, GERMAN_ADJV_NAME, GERMAN_NOUN_NAME] + OTHER_GERMAN_NOTES:
+        if (fidx == field_indices['Manual Override'] and note['Manual Override'] == 'a') \
+                or note_type in OTHER_GERMAN_NOTES:
+
+            add_sound(note)
         
-        return True
+            return True
 
     return flag
 
@@ -326,6 +332,9 @@ def add_sound(note):
 
         """ Replacing | for generating the infinitive """
         note['Infinitive Sound'] = tts(note['Infinitive'].replace("|", ""))
+
+    if note_type in OTHER_GERMAN_NOTES:
+        add_sound_to_field(note, "German")
 
 addHook("editFocusLost", onFocusLost)
 
