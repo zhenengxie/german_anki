@@ -1,35 +1,35 @@
 """ Anki autofiller """
 
+import sys
+import subprocess
+
+code = """
+import sys
+print(";".join(sys.path))
+"""
+
+newpath = subprocess.check_output(["python", "-c", code]).decode('utf-8').split(';')
+
+for item in newpath:
+    sys.path.append(item)
+    
 from anki.hooks import addHook
 import hashlib
-from google.cloud import texttospeech
 from german_anki.conjugator import conjugate_verb, declenations_adj, declenations_noun
 from bs4 import BeautifulSoup
 from aqt import mw
 from aqt.editor import Editor
 from aqt.utils import showInfo
-
-CLIENT = texttospeech.TextToSpeechClient()
-VOICE = texttospeech.types.VoiceSelectionParams(
-        language_code='de-DE',
-        name='de-DE-Wavenet-B')
-AUDIO_CONFIG = texttospeech.types.AudioConfig(
-    audio_encoding=texttospeech.enums.AudioEncoding.MP3)
-
+import os
+    
 def tts(text, prefix = None):
     text = BeautifulSoup(text, "lxml").text # parsing out all html tags
     if prefix is not None:
         text = prefix + ' ' + text
     filename = "german-gtts-{0}.mp3".format(hashlib.md5(text.encode('utf-8')).hexdigest())
 
-    try:
-        out = open(filename, 'r')
-        out.close()
-    except FileNotFoundError: # only generate speech if the text is new
-        synthesis_input = texttospeech.types.SynthesisInput(text=text)
-        response = CLIENT.synthesize_speech(synthesis_input, VOICE, AUDIO_CONFIG)
-        with open(filename, 'wb') as out:
-            out.write(response.audio_content)
+    command = """python ~/.local/share/Anki2/addons21/german_anki/google_tts.py "{0}" {1}""".format(text, filename)
+    os.system(command)
 
     return "[sound:{0}]".format(filename)
 
